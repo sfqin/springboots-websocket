@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>用户界面</title>
+</head>
+<body>
+    <div id="app"></div>
+    <script type="text/javascript" src="/webjars/vue/vue.js"></script>
+    <script type="text/javascript" src="/webjars/sockjs-client/sockjs.js"></script>
+    <script type="text/javascript" src="/webjars/stomp-websocket/stomp.js"></script>
+    <script type="text/javascript">
+        var stompClient = null;
+        new Vue({
+            el:'#app',
+            template:`
+                <div>
+                    <div>
+                        <h3>建立通道连接</h3>
+                        <button @click="connect" :disabled="dis1">建立连接</button>
+                        <button @click="disconnect" :disabled="dis2">断开连接</button>
+                    </div>
+                    <div>
+                        <h3>游戏公告</h3>
+                        <hr>
+                        <table>
+                            <tr v-for = 'item in array'> {{ item.content }} 时间 {{ item.time }}</tr>
+                        </table>
+                    </div>
+
+                </div>
+            `,
+            data(){
+                return {
+                    dis1:false,
+                    dis2:true,
+                    array:[]
+                }
+            },
+            methods:{
+
+                connect(){
+                    var socket = new SockJS('/endpoint-websocket')
+                    stompClient = Stomp.over(socket)
+                    stompClient.connect({},(frame)=> {
+                        this.dis1 = true
+                        this.dis2 = false
+                        console.log('connect:' + frame)
+                        stompClient.subscribe('/topic/game_chat',(res) => {
+                            resBody = JSON.parse(res.body)
+                            this.array.push({content:resBody.content,time:resBody.time})
+                        })
+                    })
+                },
+                disconnect(){
+                    this.dis1 = false
+                    this.dis2 = true
+                    if(stompClient != null){
+                        stompClient.disconnect()
+                    }
+                    console.log("disconnected")
+                }
+            }
+        })
+    </script>
+</body>
+</html>
