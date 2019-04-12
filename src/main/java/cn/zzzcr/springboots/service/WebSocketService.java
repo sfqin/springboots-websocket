@@ -17,4 +17,9 @@ public class WebSocketService {
         messagingTemplate.convertAndSend(dest,new OutMessage(inMessage.getContent()));
     }
 
+    public void sendChatMsg(InMessage inMessage){
+        messagingTemplate.convertAndSend("/chat/single/"+ inMessage.getTo(),
+                new OutMessage(inMessage.getFrom() +" 发送：" + inMessage.getContent()));
+    }
+
 }
