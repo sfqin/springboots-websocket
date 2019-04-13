@@ -5,7 +5,7 @@ import org.springframework.messaging.simp.stomp.StompHeaderAccessor;
 import org.springframework.stereotype.Component;
 import org.springframework.web.socket.messaging.SessionUnsubscribeEvent;
 
-@Component
+//@Component
 public class UnSubscribeEventListener implements ApplicationListener<SessionUnsubscribeEvent> {
 
 

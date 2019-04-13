@@ -21,13 +21,7 @@
                         <button @click="disconnect" :disabled="dis2">断开连接</button>
                     </div>
                     <div>
-                        <input type="text" v-model:value="from" placeholder="我是">
-                        <input type="text" v-model:value="to"  placeholder="发送给谁">
-                        <input type="text" v-model:value="msg" placeholder="请输入...">
-                        <button  @click="send">发送</button>
-                    </div>
-                    <div>
-                        <h3>通话记录</h3>
+                        <h3>服务器资源</h3>
                         <hr>
                         <table>
                             <tr v-for = 'item in array'> {{ item.content }} 时间 {{ item.time }}</tr>
@@ -40,10 +34,7 @@
                 return {
                     dis1:false,
                     dis2:true,
-                    array:[],
-                    from:'',
-                    to:'',
-                    msg:''
+                    array:[]
                 }
             },
             methods:{
@@ -55,7 +46,7 @@
                         this.dis1 = true
                         this.dis2 = false
                         console.log('connect:' + frame)
-                        stompClient.subscribe('/chat/single' + this.from,(res) => {
+                        stompClient.subscribe('/topic/server_info',(res) => {
                             resBody = JSON.parse(res.body)
                             this.array.push({content:resBody.content,time:new Date(resBody.time).toLocaleString()})
                         })
@@ -68,10 +59,6 @@
                         stompClient.disconnect()
                     }
                     console.log("disconnected")
-                },
-                send(){
-                    var json = {from:this.from,content:this.msg,to:this.to}
-                    stompClient.send("/app/v3/single/chat",{},JSON.stringify(json))
                 }
             }
         })

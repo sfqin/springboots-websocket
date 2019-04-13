@@ -14,9 +14,7 @@ public class OutMessage {
 
     public OutMessage(String content){
         this.content = content;
-
     }
-
 
     public String getFrom() {
         return from;

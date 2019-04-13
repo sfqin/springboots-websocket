@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>用户界面</title>
+</head>
+<body>
+    <div id="app"></div>
+    <script type="text/javascript" src="/webjars/vue/vue.js"></script>
+    <script type="text/javascript" src="/webjars/sockjs-client/sockjs.js"></script>
+    <script type="text/javascript" src="/webjars/stomp-websocket/stomp.js"></script>
+    <script type="text/javascript">
+        var stompClient = null;
+        new Vue({
+            el:'#app',
+            template:`
+                <div>
+                    <div>
+                        <h3>建立通道连接</h3>
+                        <button @click="connect" :disabled="dis1">建立连接</button>
+                        <button @click="disconnect" :disabled="dis2">断开连接</button>
+                    </div>
+                    <div>
+                        <h3>股票信息</h3>
+                        <hr>
+                        <table border="1">
+                            <tr>
+                                <th>股票代码</th>
+                                <th>公司简称</th>
+                                <th>时间</th>
+                                <th>收盘价</th>
+                                <th>最高价</th>
+                                <th>最低价</th>
+                                <th>开盘价</th>
+                                <th>昨日收盘价</th>
+                                <th>成交量</th>
+                                <th>成交额</th>
+                                <th>涨跌额</th>
+                                <th>涨跌幅</th>
+                            </tr>
+                            <tr v-for = 'item in array'>
+                                <td>{{ item.stockCode }}</td>
+                                <td>{{ item.stockNameCH }}</td>
+                                <td>{{ item.time }}</td>
+                                <td>{{ item.closePrice }}</td>
+                                <td>{{ item.maxPrice }}</td>
+                                <td>{{ item.minPrice }}</td>
+                                <td>{{ item.openPrice }}</td>
+                                <td>{{ item.lastDayClosePrice }}</td>
+                                <td>{{ item.volume }}</td>
+                                <td>{{ item.turnover }}</td>
+                                <td>{{ item.updown }}</td>
+                                <td>{{ item.updownPer }}</td>
+                            </tr>
+                        </table>
+                    </div>
+
+                </div>
+            `,
+            data(){
+                return {
+                    dis1:false,
+                    dis2:true,
+                    array:[]
+                }
+            },
+            methods:{
+
+                connect(){
+                    var socket = new SockJS('/endpoint-websocket')
+                    stompClient = Stomp.over(socket)
+                    stompClient.connect({},(frame)=> {
+                        this.dis1 = true
+                        this.dis2 = false
+                        console.log('connect =>' + frame)
+                        stompClient.subscribe('/topic/stock_info',(res) => {
+                            resBody = JSON.parse(res.body)
+                            this.array.push({
+                                closePrice:resBody.closePrice,
+                                lastDayClosePrice:resBody.lastDayClosePrice,
+                                maxPrice:resBody.maxPrice,
+                                minPrice:resBody.minPrice,
+                                openPrice:resBody.openPrice,
+                                stockCode:resBody.stockCode,
+                                stockNameCH:resBody.stockNameCH,
+                                time:resBody.time,
+                                turnover:resBody.turnover,
+                                updown:resBody.updown,
+                                updownPer:resBody.updownPer,
+                                volume:resBody.volume
+                            })
+                        })
+                    })
+                },
+                disconnect(){
+                    this.dis1 = false
+                    this.dis2 = true
+                    if(stompClient != null){
+                        stompClient.disconnect()
+                    }
+                    console.log("disconnected")
+                }
+            }
+        })
+    </script>
+</body>
+</html>
